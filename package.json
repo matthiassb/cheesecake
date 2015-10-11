@@ -1,6 +1,6 @@
 {
   "name": "cheesecake",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A fully featured media server",
   "main": "index.js",
   "scripts": {
