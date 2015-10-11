@@ -1,7 +1,8 @@
 <img align="right" style=" float: right;" src="http://matthiassb.github.io/cheesecake/images/app-icon.png" width="200">
 <br/><br/>
-CheeseCake
-======================
+# CheeseCake
+
+[![NPM](https://nodei.co/npm/cheesecake.png)](https://nodei.co/npm/cheesecake/)
 
 A fully featured media server written in NodeJS.
 
@@ -9,7 +10,7 @@ A fully featured media server written in NodeJS.
 
  - FFMPEG
 
-####Install
+#### Install
 ```bash
 $ npm install -g cheesecake
 ```
