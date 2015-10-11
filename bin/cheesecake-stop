@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+var pm2 = require('pm2');
+
+
+pm2.connect(function() {
+  pm2.stop("cheesecake", function(err, proc){
+    pm2.delete("cheesecake", function(err, proc){
+      if(!err){
+        pm2.killDaemon(function(err, ret){
+          console.log("Cheesecake Stopped")
+          process.exit(0)
+        })
+      } else {
+        console.log("Cheesecake could not be stopped");
+      }
+    })
+  });
+});

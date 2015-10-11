@@ -1,0 +1,177 @@
+{{> header }}
+
+    <!-- Portfolio Grid Section -->
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2>Television</h2>
+                    <hr class="star-primary">
+                </div>
+            </div>
+            <div class="row">
+              {{#unless this.isSomeShows }}
+              <div class="col-xs-6 col-lg-4 portfolio-item">
+                  <a class="portfolio-link">
+                      <div class="caption">
+                          <div class="caption-content">
+                            <h3>No Media Found</h3>
+                            <br/>
+                            <i class="fa fa-play-circle fa-3x"></i>
+                          </div>
+                      </div>
+                      <img src="/assets/img/default-poster.png" class="img-responsive" >
+                  </a>
+              </div>
+              {{/unless}}
+
+              {{#each this.shows}}
+              <div class="col-xs-6 col-lg-4 portfolio-item">
+                  <a class="portfolio-link"  data-key="{{ id }}">
+                      <div class="caption">
+                          <div class="caption-content">
+                            <h3>{{ SeriesName }}</h3>
+                            <br/>
+                            <i class="fa fa-play-circle fa-3x"></i>
+                          </div>
+                      </div>
+                      <img src="/ddir/episodes/{{id}}/poster.jpg" class="img-responsive" >
+                  </a>
+              </div>
+              {{/each}}
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Portfolio Modals -->
+    <div class="portfolio-modal modal fade" id="mediaModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="modal-body">
+                            <img id="banner" src="" style="width: 100%;">
+                            <h2 id="season">Title</h2>
+                            <hr class="star-primary">
+                            <div class="row" id="episodes">
+                              <div class="col-lg-4 col-xs-6 portfolio-item">
+                                <p class="title" style="margin: 0px; height:60px"></p>
+                                <p class="episodeNumber"></p>
+                                  <a href="" class="portfolio-link">
+                                      <div class="caption">
+                                          <div class="caption-content">
+                                            <h3>View Episode</h3>
+                                          </div>
+                                      </div>
+                                      <img src="{{ ../host }}{{ thumb }}" class="img-responsive" alt="" style="width:347px; height: 195px">
+                                  </a>
+                              </div>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{> footer }}
+
+    <script>
+
+      var key;
+      $(document).ready(function(){
+        if(getParameterByName("show") != ""){
+          showSeasonEpisodes(
+            getParameterByName("show"),
+            getParameterByName("season")
+          );
+        }
+        $('#mediaModal').on('hidden.bs.modal', function (e) {
+          history.pushState({}, "", "/media/tv");
+        })
+        $(".portfolio-link").click(function(){
+
+          key = $(this).data("key");
+
+          if($(this).attr("href") == ""){
+            swal({
+              title: "No Media Found",
+              text: "<a href='/add-media' class='btn btn-primary'>Add Media Here!</a>",
+              html: true,
+              showConfirmButton: false,
+              allowOutsideClick: true,
+              showCancelButton: true
+            });
+            return;
+          }
+          $.get("/api/media/tv/" + key + "/meta",
+          function(res){
+            var buttons = "";
+            for(var i = 1; i <= res.data.CheesecakeSeasonCount; i++){
+              buttons += "<button data-season='" + (i) + "' class='showSeason btn btn-primary'>Season " + (i) + "</button>";
+            }
+            swal({
+              title: "Seasons",
+              text: buttons,
+              html: true,
+              showConfirmButton: false,
+              allowOutsideClick: true,
+              showCancelButton: true
+            });
+          });
+        });
+        function showSeasonEpisodes(key, seasonNumber){
+          $.get("/api/media/tv/" + key + "/season/" + seasonNumber,
+           function(res){
+             history.pushState({}, "", "/media/tv?show=" + key + "&season=" + seasonNumber);
+             $("#banner").attr("src", "/ddir/episodes/" + key + "/banner.jpg");
+             $("#season").text("Season " + seasonNumber);
+             $("#episodes").children().not(":first").remove();
+             $("#episodes div img").attr("src", "/ddir/" + res.data.Episodes[0].filename);
+             $("#episodes a").attr("href", "/media/tv/" + res.data.id + "/" + res.data.Episodes[0].id);
+             $("#episodes div .title").text(res.data.Episodes[0].EpisodeName);
+             $("#episodes div .episodeNumber").text("Episode " + res.data.Episodes[0].EpisodeNumber);
+             res.data.Episodes.shift();
+             $.each(res.data.Episodes, function(k, v){
+
+               $clone = $("#episodes div:first").clone();
+
+               $clone.find("img").attr("src", "/ddir/" + v.filename);
+
+               $clone.find("a").attr("href", "/media/tv/" + res.data.id + "/" + v.id);
+               $clone.find(".title").text(v.EpisodeName);
+               $clone.find(".episodeNumber").text("Episode " + v.EpisodeNumber);
+
+               $("#episodes").append($clone);
+             });
+             $('#mediaModal').modal('toggle')
+           }
+         );
+        }
+        $(document).on('click', '.showSeason', function(){
+          var seasonNumber = $(this).data("season");
+          showSeasonEpisodes(key, seasonNumber);
+        });
+        function getParameterByName(name) {
+          name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+          var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+              results = regex.exec(location.search);
+          return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+    });
+
+
+    </script>
+
+</body>
+
+</html>

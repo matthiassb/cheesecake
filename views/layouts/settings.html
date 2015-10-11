@@ -1,0 +1,133 @@
+{{> header }}
+
+  <!-- Portfolio Grid Section -->
+  <section id="libraries">
+    <div class="container">
+      <form name="settingsForm" id="settingsForm" action="/api/settings" method="POST">
+        <h3>General Config</h3>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Password Protected &nbsp;</label>
+            <input type="checkbox" name="isPasswordProtected" data-size="small">
+          </div>
+          <div id="usernameGroup" class="form-group col-xs-12 controls" style="display:none;">
+            <label>Username</label>
+            <input type="text" class="form-control" placeholder="" name="username">
+          </div>
+          <div id="passwordGroup" class="form-group col-xs-12 controls" style="display:none;">
+            <label>Password</label>
+            <input type="text" class="form-control" placeholder="" name="password">
+          </div>
+        </div>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Data Directory</label>
+            <input type="text" class="form-control" placeholder="{{ this.dataDir }}" name="dataDir">
+          </div>
+        </div>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Download Directory</label>
+            <input type="text" class="form-control" placeholder="{{ this.downloadDir }}" name="downloadDir">
+          </div>
+        </div>
+        <h3>Usenet Config</h3>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Usenet Server</label>
+            <input type="text" class="form-control" placeholder="{{ this.usenetServer }}" name="usenetServer">
+          </div>
+        </div>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Usenet Port</label>
+            <input type="text" class="form-control" placeholder="{{ this.usenetPort }}" name="usenetPort">
+          </div>
+        </div>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Usenet Username</label>
+            <input type="text" class="form-control" placeholder="{{ this.usenetUsername }}" name="usenetUsername">
+          </div>
+        </div>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Usenet Password</label>
+            <input type="password" class="form-control" placeholder="{{#if this.usenetUsername}} ***** {{/if}}" name="usenetPassword">
+          </div>
+        </div>
+        <div class="row control-group">
+          <div class="form-group col-xs-12 controls">
+            <label>Usenet Connections</label>
+            <input type="text" class="form-control" placeholder="{{ this.usenetConnections }}" name="usenetConnections">
+          </div>
+          <div class="form-group col-xs-12 controls">
+            <label>SSL &nbsp;</label>
+            <input type="checkbox" name="isUsenetSSL" data-size="small" {{#if this.isUsenetSSL}} checked {{/if}}>
+          </div>
+        </div>
+        <h3>Indexers</h3>
+        <div class="row control-group">
+          <div class="form-group col-xs-6 controls">
+            <label>Site</label>
+            <input type="text" class="form-control" name="indexerSite" placeholder="{{ indexerSite }}">
+          </div>
+          <div class="form-group col-xs-6 controls">
+            <label>API Key</label>
+            <input type="text" class="form-control" name="indexerKey" placeholder="{{ indexerKey }}">
+          </div>
+        </div>
+        <div class="form-group col-xs-12">
+          <button type="submit" class="btn btn-success btn-lg " style="float:right">Save</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+
+    {{> footer }}
+
+<script>
+  $(document).ready(function(){
+    $("[name='isPasswordProtected']").bootstrapSwitch();
+    $("[name='isUsenetSSL']").bootstrapSwitch();
+    $("[name='isPasswordProtected']").on('switchChange.bootstrapSwitch', function(event, state) {
+      console.log(state)
+      if(state == true){
+        $("#usernameGroup").slideDown();
+        $("#passwordGroup").slideDown();
+      } else {
+        $("#usernameGroup").slideUp();
+        $("#passwordGroup").slideUp();
+      }
+    });
+
+    $("#settingsForm").submit(function(e){
+      e.preventDefault();
+      $("#fakeLoader").fadeIn();
+      console.log($(this).serialize())
+      $.post("/api/settings", $(this).serialize(), function(data){
+        $.get("/api/settings", function(data){
+          for(var prop in data.config){
+            if(typeof data.config[prop] === "string"){
+              if($("[name='"+ prop + "']").attr("type") == "password"){
+                $("[name='"+ prop + "']").attr("placeholder", "*****");
+              } else {
+                $("[name='"+ prop + "']").attr("placeholder", data.config[prop]).val("").focus().blur();
+              }
+            } else if(typeof data.config[prop] === "boolean"){
+              $("[name='"+ prop + "']").bootstrapSwitch('state', data.config[prop]);
+            }
+          }
+          swal("Config Saved", "", "success");
+          $("#fakeLoader").fadeOut();
+        });
+
+
+      });
+    });
+  });
+</script>
+</body>
+
+</html>

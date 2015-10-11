@@ -1,0 +1,189 @@
+{{> header }}
+
+<body id="page-top" class="index">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">CheeseCake</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="hidden">
+                        <a href="#page-top"></a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#recentlyAdded">Recently Added</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="/libraries">Libraries</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="/add-media">Add Media</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="/manage-media">Manage Media</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#settings">Settings</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <i class="fa fa-birthday-cake fa-4x"></i>
+                    <div class="intro-text">
+                        <span class="name">Cheesecake</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Portfolio Grid Section -->
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2>Television</h2>
+                    <hr class="star-primary">
+                </div>
+            </div>
+            <div class="row">
+              {{#each this}}
+              <div class="col-xs-6 col-lg-4 portfolio-item">
+                  <a class="portfolio-link"  data-key="{{ id }}">
+                      <div class="caption">
+                          <div class="caption-content">
+                            <h3>{{ SeriesName }}</h3>
+                            <br/>
+                            <i class="fa fa-play-circle fa-3x"></i>
+                          </div>
+                      </div>
+                      <img src="/ddir/episodes/{{id}}/poster.jpg" class="img-responsive" >
+                  </a>
+              </div>
+              {{/each}}
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Modals -->
+    <div class="portfolio-modal modal fade" id="portfolioModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="modal-body">
+                            <img id="banner" src="" style="width: 100%;">
+                            <h2 id="season">Title</h2>
+                            <hr class="star-primary">
+                            <div class="row" id="episodes">
+                              <div class="col-lg-4 col-xs-6 portfolio-item">
+                                <p class="title" style="margin: 0px; height:60px"></p>
+                                <p class="episodeNumber"></p>
+                                  <a href="" class="portfolio-link">
+                                      <div class="caption">
+                                          <div class="caption-content">
+                                            <h3>View Episode</h3>
+                                          </div>
+                                      </div>
+                                      <img src="{{ ../host }}{{ thumb }}" class="img-responsive" alt="">
+                                  </a>
+                              </div>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{> footer }}
+
+    <script>
+
+      var key;
+      $(document).ready(function(){
+        $(".portfolio-link").click(function(){
+          key = $(this).data("key");
+
+          $.get("/api/media/tv/" + key + "/meta",
+          function(res){
+            var buttons = "";
+            for(var i = 1; i <= res.data.CheesecakeSeasonCount; i++){
+              buttons += "<button data-season='" + (i) + "' class='showSeason btn btn-primary'>Season " + (i) + "</button>";
+            }
+            swal({
+              title: "Seasons",
+              text: buttons,
+              html: true,
+              showConfirmButton: false,
+              allowOutsideClick: true,
+              showCancelButton: true
+            });
+          });
+        });
+        $(document).on('click', '.showSeason', function(){
+          var seasonNumber = $(this).data("season");
+          console.log("/api/media/tv/" + key + "/season/" + seasonNumber);
+          $.get("/api/media/tv/" + key + "/season/" + seasonNumber,
+           function(res){
+
+             $("#banner").attr("src", "/ddir/episodes/" + key + "/banner.jpg");
+             $("#season").text("Season " + seasonNumber);
+             $("#episodes").children().not(":first").remove();
+             $("#episodes div img").attr("src", "/ddir/" + res.data.Episodes[0].filename);
+             $("#episodes a").attr("href", "/media/tv/" + res.data.id + "/" + res.data.Episodes[0].id);
+             $("#episodes div .title").text(res.data.Episodes[0].EpisodeName);
+             $("#episodes div .episodeNumber").text("Episode " + res.data.Episodes[0].EpisodeNumber);
+             res.data.Episodes.shift();
+             $.each(res.data.Episodes, function(k, v){
+
+               $clone = $("#episodes div:first").clone();
+
+               $clone.find("img").attr("src", "/ddir/" + v.filename);
+               $("#episodes").find("a").attr("href", "/media/tv/" + res.data.id + "/" + v.id);
+               $clone.find(".title").text(v.EpisodeName);
+               $clone.find(".episodeNumber").text("Episode " + v.EpisodeNumber);
+
+               $("#episodes").append($clone);
+             });
+             $('#portfolioModal').modal('toggle')
+           }
+         );
+      });
+    });
+
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+{{> header }}
+
+    <!-- Portfolio Grid Section -->
+    <section id="recentlyAdded">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2>Recently Added</h2>
+                    <hr class="star-primary">
+                </div>
+            </div>
+            <div class="row">
+              {{#each this}}
+              <div class="col-sm-4 portfolio-item">
+                  <a href="#portfolioModal" class="portfolio-link" data-toggle="modal" data-key="{{ key }}">
+                      <div class="caption">
+                          <div class="caption-content">
+                            <h3>{{ title }}</h3>
+                            <br/>
+                            <h4>{{ season }}</h4>
+                            <br/>
+                            <i class="fa fa-play-circle fa-3x"></i>
+                          </div>
+                      </div>
+                      <img src="{{ ../host }}{{ thumb }}" class="img-responsive" >
+                  </a>
+              </div>
+              {{/each}}
+
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Portfolio Modals -->
+    <div class="portfolio-modal modal fade" id="portfolioModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="modal-body">
+                            <img id="banner" src="" style="width: 100%;">
+                            <h2 id="title1">Title</h2>
+                            <h4 id="title2">Title2</h2>
+                            <hr class="star-primary">
+                            <div class="row" id="episodes">
+                              <div class="col-sm-4 portfolio-item">
+                                <p class="title"></p>
+                                <p class="episodeNumber"></p>
+                                  <a href="#portfolioModal" class="portfolio-link" data-toggle="modal" data-key="{{ key }}">
+                                      <div class="caption">
+                                          <div class="caption-content">
+                                            <i class="fa fa-play-circle fa-3x"></i>
+                                          </div>
+                                      </div>
+                                      <img src="{{ ../host }}{{ thumb }}" class="img-responsive" alt="">
+                                  </a>
+                              </div>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{> footer }}
+
+    <script>
+      $('#portfolioModal').on('show.bs.modal', function (e) {
+         var key = $(e.relatedTarget).data('key');
+         $.get("/media/" + key + "/children",
+          function(res){
+            $("#banner").attr("src", res.host + res.banner);
+            $("#title1").text(res.title1);
+            $("#title2").text(res.title2);
+            $("#episodes").children().not(":first").remove();
+            $("#episodes div img").attr("src", res.host + res._children[0].thumb);
+            $("#episodes div .title").text(res._children[0].title);
+            $("#episodes div .episodeNumber").text("Episode " + res._children[0].index);
+            res._children.shift();
+            $.each(res._children, function(k, v){
+
+              $clone = $("#episodes div:first").clone();
+
+              $clone.find("img").attr("src", res.host + v.thumb);
+              $clone.find(".title").text(v.title);
+              $clone.find(".episodeNumber").text("Episode " + v.index);
+
+              $("#episodes").append($clone);
+            });
+
+          }
+        );
+      })
+    </script>
+
+</body>
+
+</html>

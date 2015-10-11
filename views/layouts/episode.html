@@ -1,0 +1,120 @@
+{{> header }}
+
+    <!-- Portfolio Grid Section -->
+    <section >
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-offset-1 col-lg-5">
+            <img src="/ddir/{{this.Episodes.0.filename}}" style="width: 100%">
+          </div>
+          <div class="col-lg-5 text-center">
+            <br/>
+            <br/>
+            <h2 style="font-size:30px">{{this.SeriesName}}</h2>
+            <h3>{{this.Episodes.0.EpisodeName}}</h3>
+            <h4>Season {{this.Episodes.0.SeasonNumber}} Episode {{this.Episodes.0.EpisodeNumber}}</h4>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-offset-1 col-lg-10" style="text-align:justify">
+            <br/>
+            <h4>{{this.Episodes.0.Overview}}</h4>
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-xs-4 col-lg-offset-3 col-lg-2 " style="text-align: center;">
+            <a data-show="{{ this.id }}" data-episode="{{this.Episodes.0.id}}"
+            {{#if this.Episodes.0.CheescakeIsDownloaded }}
+              class="play"
+            {{else}}
+              class="download"
+            {{/if}}>
+              {{#if this.Episodes.0.CheescakeIsDownloaded }}
+                <img src="/assets/img/play.png" class="img-responsive"  style="display:inline">
+              {{else}}
+                <img src="/assets/img/download.png" class="img-responsive" style="display:inline">
+              {{/if}}
+            </a>
+          </div>
+          <div class="col-xs-4 col-lg-2 " style="text-align: center;">
+            <a data-show="{{ this.id }}" data-episode="{{this.Episodes.0.id}}">
+                <img src="/assets/img/uncheck.png" class="img-responsive" style="display:inline">
+            </a>
+
+          </div>
+          <div class="col-xs-4 col-lg-2 " style="text-align: center;">
+            <a data-show="{{ this.id }}" data-episode="{{this.Episodes.0.id}}">
+              <img src="/assets/img/computer.png" class="img-responsive" alt="" style="display:inline">
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="portfolio-modal modal fade" id="mediaModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="modal-body">
+                            <div class="row">
+                              <video width="800"  id="video" controls>
+                                <source src="" id="videoSource">
+                              </video>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">
+                              <i class="fa fa-times"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {{> footer }}
+
+<script>
+  $(document).ready(function(){
+    $(".download").click(function(e){
+      e.preventDefault();
+      var show = $(this).data('show');
+      var episode = $(this).data('episode');
+      console.log(show, episode)
+      $.post("/api/download",
+        {
+          "show": show,
+          "episode": episode
+        },
+        function(data){
+          if(data.statusCode == 201){
+
+          }
+        }
+      );
+    });
+    $(".play").click(function(e){
+      e.preventDefault();
+      var show = $(this).data('show');
+      var episode = $(this).data('episode');
+      $("#videoSource").attr("src", "/media/tv/" + show + "/" + episode + "/stream");
+      $("#video").load()
+      //setup socket.io stuff here
+      $('#mediaModal').modal('toggle');
+
+    });
+
+  });
+
+</script>
+</body>
+
+</html>

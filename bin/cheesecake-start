@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+
+var pm2 = require('pm2');
+var path = require("path");
+var argv = require('yargs')
+  .usage('Usage: cheesecake-start -c [config file]')
+  .demand('c')
+  .alias('c', 'config')
+  .nargs('c', 1)
+  .describe('c', 'Specifies the path to the configuration file')
+  .help('h')
+  .alias('h', 'help')
+  .argv;
+
+pm2.connect(function() {
+  pm2.start({
+    script    : path.normalize(__dirname + "/../index.js"),
+    exec_mode : 'fork',
+    instances : 1,
+    name: "cheesecake",
+    args: [ path.resolve(argv.c)]
+  },
+  function(err, apps) {
+    if(!err){
+      console.log("Cheesecake Service Started.")
+    } else {
+      console.log("Cheesecake Failed to Start.")
+    }
+    pm2.disconnect();
+  });
+
+});

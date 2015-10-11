@@ -1,0 +1,134 @@
+{{> header }}
+
+
+    <!-- Portfolio Grid Section -->
+    <section >
+      <div class="container">
+          <div class="row">
+              <div class="col-lg-12 text-center">
+                  <h2>Add Media</h2>
+                  <hr class="star-primary">
+              </div>
+          </div>
+          <div class="row">
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-7">
+                <input type="text" autocomplete="off" class="form-control" id="mediaSearch" placeholder="Search" >
+              </div>
+              <div class="col-lg-1">
+                <input type="checkbox" name="isTv" data-size="large" checked>
+              </div>
+            </div>
+          </div>
+          <br/>
+          <div class="row" id="results">
+            <div class="col-sm-6 col-md-4" style="display:none">
+              <div class="thumbnail">
+                <img src="" alt="">
+                <div class="caption">
+                  <h3></h3>
+                  <span class="overview"></span>
+                  <p>&nbsp;</p>
+                  <p><a href="#/" class="btn btn-primary addSeries" role="button">Add</a></p>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+    <div class="scroll-top page-scroll visible-xs visible-sm">
+        <a class="btn btn-primary" href="#page-top">
+            <i class="fa fa-chevron-up"></i>
+        </a>
+    </div>
+
+    {{> footer }}
+
+    <script>
+      $("[name='isTv']").bootstrapSwitch({
+        "onText": "TV",
+        "offText": "Movies"
+      });
+      $(document).on('click', '.addSeries', function(){
+        $("#fakeLoader").fadeIn();
+        var id = $(this).data("series");
+        $.post("/api/media/tv/" + id, function(res){
+          $("#fakeLoader").fadeOut();
+          swal("Media Successfully Added", "Redirecting...", "success");
+          setTimeout(function(){
+            window.location = "/media/tv";
+          }, 2000);
+        });
+      });
+      String.prototype.trimToLength = function(m) {
+        return (this.length > m)
+          ? jQuery.trim(this).substring(0, m).split(" ").slice(0, -1).join(" ") + "..."
+          : this;
+      };
+      var typingTimer;                //timer identifier
+      var doneTypingInterval = 1000;  //time in ms, 5 second for example
+      var $input = $('#mediaSearch');
+
+      $('#mediaSearch').keypress(function (e) {
+        clearTimeout(typingTimer);
+        if (e.which == 13) {
+          doneTyping();
+          return false;
+        } else {
+          typingTimer = setTimeout(doneTyping, doneTypingInterval);
+        }
+      });
+
+      function clearUp(){
+        $("#results > div").not(":first").remove();
+        $("#results div:first").find("h3").text("No Results");
+        $("#results div:first").find("img").attr("src", "");
+        $("#results div:first").find(".overview").text("");
+        $("#results > div").hide()
+      }
+      //user is "finished typing," do something
+      function doneTyping () {
+         $("#fakeLoader").fadeIn();
+         var url = "/media/search/new?term=" + $('#mediaSearch').val();
+         if($("[name='isTv']").is(":checked")){
+
+         }
+         $.get(url, function(response){
+
+           $("#results > div").not(":first").remove();
+           if(response.Data.Series.length){
+             $("#results div:first").find("h3").text(response.Data.Series[0].SeriesName);
+             $("#results div:first").find("img").attr("src", "http://thetvdb.com/banners/" + response.Data.Series[0].poster);
+            $("#results div:first").find(".overview").text(response.Data.Series[0].Overview.length ? response.Data.Series[0].Overview.trimToLength(200): "");
+            $("#results div:first").find("a").data("series", response.Data.Series[0].id);
+            for(var i = 1; i < response.Data.Series.length; i++){
+              $clone = $("#results > div:first").clone();
+              $clone.find("h3").text(response.Data.Series[i].SeriesName);
+              $clone.find("img").attr("src", "http://thetvdb.com/banners/" + response.Data.Series[i].poster);
+              $clone.find(".overview").text(response.Data.Series[i].Overview.length ? response.Data.Series[i].Overview.trimToLength(200): "");
+              $clone.find("a").data("series", response.Data.Series[i].id);
+              $("#results").append($clone);
+            }
+            $("#results > div").show();
+            } else {
+              clearUp();
+            }
+
+          $("#fakeLoader").fadeOut();
+        }).fail(function(xhr, text, error) {
+          if(xhr.status == 404){
+            clearUp();
+            $("#fakeLoader").fadeOut();
+            swal("No Media Found", "", "error");
+          }
+        })
+      }
+
+    </script>
+</body>
+
+</html>
