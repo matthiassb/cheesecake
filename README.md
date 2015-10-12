@@ -18,7 +18,6 @@ $ npm install -g cheesecake
 ```bash
 $ cheesecake-start
 $ cheesecake-stop
-$ cheesecake-restart
 ```
 
 #### Accessing the UI
