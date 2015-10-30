@@ -603,7 +603,8 @@ server.route({
               var index = index[0];
               docs[0].Episodes[index].CheescakeIsDownloaded = true;
               docs[0].Episodes[index].CheescakeFilePath = filePath;
-
+              docs[0].Episodes[index].CheescakeDownloadDate = new Date();
+              
               db.media.update({ _id: docs[0]._id }, docs[0], {}, function (err, numReplaced){
                 callback(null)
               });
