@@ -522,94 +522,120 @@ server.route({
             });
           },
           //download relevant NZB file and save as buffer
-          function(firstResult, dirPath, callback) {
-            requestLib(firstResult["link"][0], function(error, response, body) {
-              if (!error && response.statusCode == 200) {
-                var nzbBuffer = new Buffer(body)
-                callback(null, dirPath, nzbBuffer);
+          function(firstResult, dirPath, outsideCallback) {
+            var downloadCount = 0;
+            var downloadSuccess = false;
+            //continuously try the download/extraction/etc until success or we've downloaded 5 times.
+            async.whilst(
+              function(){ return downloadSuccess == false && downloadCount < 5; },
+              function (whilstCallback){
+                async.waterfall([
+                  function(insideCallback){
+                    requestLib(firstResult["link"][0], function(error, response, body) {
+                      if (!error && response.statusCode == 200) {
+                        var nzbBuffer = new Buffer(body)
+                        insideCallback(null, dirPath, nzbBuffer);
+                      }
+                    });
+                  },
+                  //start download of NZB contents
+                  //inform client download has started
+                  function(dirPath, nzbBuffer, callback) {
+                    reply({
+                      "statusCode": 202,
+                      "message": "Download in Progress"
+                    }).code(202);
+
+                    nzbclient.grab(nzbBuffer, function(err, filename, chunk, done) {
+                      return fs.appendFile(dirPath + "/" + filename, chunk, function(err) {
+                        if (done) {
+                          callback(null, dirPath);
+                        }
+                      });
+                    });
+                  },
+                  //find par2 and if present try to repair as a default
+                  function(dirPath, callback) {
+                    glob(dirPath + "/!(*sample*)*!(*vol*)*.par2", function (er, files) {
+                      console.log(files)
+                      exec("par2 r " + files[0], {maxBuffer: 1024 * 500}, function(error, stdout, stderr) {
+                        if(error){
+                          console.log(error, stderr);
+                          downoadCount++
+                          whilstCallback();
+                          return;
+                        }
+
+                        callback(null, dirPath);
+                      });
+                    });
+                  },
+                  //unrar
+                  function(dirPath, callback) {
+                    glob(dirPath + "/!(*sample*)*.rar", function (er, files) {
+                      exec("unrar e -y " + files[0] + " " + dirPath, {maxBuffer: 1024 * 500}, function(error, stdout, stderr) {
+                        if(error){
+                          console.log(error, stderr);
+                          downoadCount++
+                          whilstCallback();
+                          return;
+                        }
+                        callback(null, dirPath);
+                      });
+                    });
+                  },
+                  //move to appropriate directory
+                  function(dirPath, callback) {
+                    mkdirp.sync(config.downloadDir + "/" + docs[0].SeriesName);
+                    glob(dirPath + "/!(*sample*)*.@(mkv|avi|mp4)", function (er, files) {
+                      var mv = require('mv');
+                      var filename = Path.basename(files[0]);
+
+                      var dest = config.downloadDir + "/" + docs[0].SeriesName + "/" + filename;
+                      var destSubDir = docs[0].SeriesName + "/" + filename;
+
+                      mv(
+                        files[0],
+                        config.downloadDir + "/" + docs[0].SeriesName + "/" + filename,
+                        function(err) {
+                        callback(null, destSubDir)
+                      });
+
+                    });
+                  },
+                  //update db
+                  function(filePath, callback) {
+                    console.log(filePath);
+
+                    var query = {};
+                    query.CheesecakeType = "tv";
+                    query.id = parseInt(request.payload.show);
+                    query["Episodes.id"] = parseInt(request.payload.episode);
+
+                    db.media.find(query, function (err, docs) {
+                      var index = docs[0].Episodes.map(function(obj, index) {
+                        if(obj.id == parseInt(request.payload.episode)) {
+                          return index;
+                        }
+                      }).filter(isFinite)
+                      var index = index[0];
+                      docs[0].Episodes[index].CheescakeIsDownloaded = true;
+                      docs[0].Episodes[index].CheescakeFilePath = filePath;
+                      docs[0].Episodes[index].CheescakeDownloadDate = new Date();
+
+                      db.media.update({ _id: docs[0]._id }, docs[0], {}, function (err, numReplaced){
+                        callback(null)
+                      });
+                    });
+                  }
+                ])
+
               }
-            });
-          },
-          //start download of NZB contents
-          //inform client download has started
-          function(dirPath, nzbBuffer, callback) {
-            reply({
-              "statusCode": 202,
-              "message": "Download in Progress"
-            }).code(202);
 
-            nzbclient.grab(nzbBuffer, function(err, filename, chunk, done) {
-              return fs.appendFile(dirPath + "/" + filename, chunk, function(err) {
-                if (done) {
-                  console.log("test")
-                  callback(null, dirPath);
-                }
-              });
-            });
-          },
-          //find par2 and if present try to repair as a default
-          function(dirPath, callback) {
-            glob(dirPath + "/!(*sample*)*!(*vol*)*.par2", function (er, files) {
-              console.log(files)
-              exec("par2 r " + files[0], {maxBuffer: 1024 * 500}, function(error, stdout, stderr) {
-                console.log(error, stderr);
-                callback(null, dirPath);
-              });
-            });
-          },
-          //unrar
-          function(dirPath, callback) {
-            glob(dirPath + "/!(*sample*)*.rar", function (er, files) {
-              exec("unrar e -y " + files[0] + " " + dirPath, {maxBuffer: 1024 * 500}, function(error, stdout, stderr) {
-                console.log(error, stderr);
-                callback(null, dirPath);
-              });
-            });
-          },
-          //move to appropriate directory and
-          function(dirPath, callback) {
-            mkdirp.sync(config.downloadDir + "/" + docs[0].SeriesName);
-            glob(dirPath + "/!(*sample*)*.@(mkv|avi|mp4)", function (er, files) {
-              var mv = require('mv');
-              var filename = Path.basename(files[0]);
+            )
 
-              var dest = config.downloadDir + "/" + docs[0].SeriesName + "/" + filename;
-              var destSubDir = docs[0].SeriesName + "/" + filename;
-
-              mv(
-                files[0],
-                config.downloadDir + "/" + docs[0].SeriesName + "/" + filename,
-                function(err) {
-                callback(null, destSubDir)
-              });
-
-            });
-          },
-          //update db
-          function(filePath, callback) {
-            console.log(filePath);
-
-            var query = {};
-            query.CheesecakeType = "tv";
-            query.id = parseInt(request.payload.show);
-            query["Episodes.id"] = parseInt(request.payload.episode);
-
-            db.media.find(query, function (err, docs) {
-              var index = docs[0].Episodes.map(function(obj, index) {
-                if(obj.id == parseInt(request.payload.episode)) {
-                  return index;
-                }
-              }).filter(isFinite)
-              var index = index[0];
-              docs[0].Episodes[index].CheescakeIsDownloaded = true;
-              docs[0].Episodes[index].CheescakeFilePath = filePath;
-              docs[0].Episodes[index].CheescakeDownloadDate = new Date();
-              
-              db.media.update({ _id: docs[0]._id }, docs[0], {}, function (err, numReplaced){
-                callback(null)
-              });
-            });
           }
+
         ], function (err, result) {
             // result now equals 'done'
         });
