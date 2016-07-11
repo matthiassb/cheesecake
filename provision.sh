@@ -16,7 +16,6 @@ echo "Setting Up VM. This may take some time...."
   ln -s go$GOLANG_VERSION go
   echo export PATH="$PATH:$HOME/go/bin" >> ~/.profile
   echo export GOROOT=$HOME/go/ >> ~/.profile
-  echo export GOPATH=$HOME/projects/go >> ~/.profile
   echo export GOBIN=$HOME/projects/go/bin >> ~/.profile
 
 } &> /dev/null
