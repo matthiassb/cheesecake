@@ -1,0 +1,156 @@
+{{> header }}
+
+    <!-- Portfolio Grid Section -->
+    <section class="flex-1">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-offset-1 col-lg-5">
+            <img src="{{ this.Episode.Image.Original }}" style="width: 100%">
+          </div>
+          <div class="col-lg-5 text-center">
+            <br/>
+            <br/>
+            <h2 style="font-size:30px">{{this.ShowInfo.Name}}</h2>
+            <h3>{{this.Episode.Name}}</h3>
+            <h4>Season {{this.Episode.Season}} Episode {{this.Episode.Number}}</h4>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-offset-1 col-lg-10" style="text-align:justify">
+            <br/>
+            <h4 class="summary">{{this.Episode.Summary}}</h4>
+          </div>
+        </div>
+        <br/>
+        <div class="row">
+          <div class="col-xs-4 col-lg-offset-3 col-lg-2 " style="text-align: center;">
+            <a data-show="{{ this.SeriesInfo.ID }}" data-episode="{{this.Episode.ID}}"
+            {{#if this.Episode.IsDownloaded }}
+              class="play"
+            {{else}}
+              class="download"
+            {{/if}}>
+              {{#if this.Episode.IsDownloaded }}
+                <img src="/assets/img/play.png" class="img-responsive"  style="display:inline">
+              {{else}}
+                <img src="/assets/img/download.png" class="img-responsive" style="display:inline">
+              {{/if}}
+            </a>
+          </div>
+          <div class="col-xs-4 col-lg-2 " style="text-align: center;">
+            <a data-show="{{ this.SeriesInfo.Id }}" data-episode="{{this.Episode.ID}}">
+                <img src="/assets/img/uncheck.png" class="img-responsive" style="display:inline">
+            </a>
+
+          </div>
+          <div class="col-xs-4 col-lg-2 " style="text-align: center;">
+            <a data-show="{{ this.SeriesInfo.Id }}" data-episode="{{this.Episode.ID}}">
+              <img src="/assets/img/computer.png" class="img-responsive" alt="" style="display:inline">
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="portfolio-modal modal fade" id="mediaModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="close-modal" data-dismiss="modal">
+                <div class="lr">
+                    <div class="rl">
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="modal-body">
+                            <div class="row">
+                              <video width="800"  id="video" controls>
+                                <source src="" id="videoSource">
+                              </video>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">
+                              <i class="fa fa-times"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer id="footer" class="text-center ">
+      <div class="container">
+          <div class="row">
+              <div class="col-lg-12">
+                  Copyright &copy; Matthias Brooks
+              </div>
+          </div>
+      </div>
+    </footer>
+
+    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+    <div class="scroll-top page-scroll visible-xs visible-sm">
+        <a class="btn btn-primary" href="#page-top">
+            <i class="fa fa-chevron-up"></i>
+        </a>
+    </div>
+
+    <!-- jQuery -->
+    <script src="/assets/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/assets/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="/assets/js/classie.js"></script>
+
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/assets/js/freelancer.js"></script>
+    <script src="/assets/js/bootstrap-switch.js"></script>
+    <script src="/assets/js/sweetalert.min.js"></script>
+
+
+
+<script>
+  $(document).ready(function(){
+    var rex = /(<([^>]+)>)/ig;
+    $(".summary").text($(".summary").text().replace(rex, ""));
+    $(".download").click(function(e){
+      e.preventDefault();
+      var show = $(this).data('show');
+      var episode = $(this).data('episode');
+      console.log(show, episode)
+      $.post("/api/download",
+        {
+          "show": show,
+          "episode": episode
+        },
+        function(data){
+          if(data.statusCode == 201){
+
+          }
+        }
+      );
+    });
+    $(".play").click(function(e){
+      e.preventDefault();
+      var show = $(this).data('show');
+      var episode = $(this).data('episode');
+      $("#videoSource").attr("src", "/media/tv/" + show + "/" + episode + "/stream");
+      $("#video").load()
+      //setup socket.io stuff here
+      $('#mediaModal').modal('toggle');
+
+    });
+
+  });
+
+</script>
+</body>
+
+</html>

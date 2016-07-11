@@ -1,0 +1,81 @@
+{{> header }}
+
+
+    <!-- Portfolio Grid Section -->
+    <section class="flex-1">
+        <div class="container">
+            <div class="row" style="margin-top:20px;">
+                <div class="col-lg-12 text-center">
+                    <h2>Libraries</h2>
+                    <hr class="star-primary">
+                </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 col-md-6 portfolio-item" style="text-align: center;">
+                <h3>Television</h3>
+                <a href="/media/tv" class="portfolio-link"  data-key="{{ key }}" style="display: inline-block">
+                    <img src="/assets/img/tv.png" class="img-responsive" alt="">
+                </a>
+              </div>
+              <div class="col-xs-12 col-md-6 portfolio-item" style="text-align: center;">
+                <h3>Movies</h3>
+                <a href="/media/movies" class="portfolio-link"  data-key="{{ key }}"  style="display: inline-block">
+                    <img src="/assets/img/movies.png" class="img-responsive" alt="">
+                </a>
+              </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer id="footer" class="text-center navbar navbar-fixed-bottom">
+      <div class="container">
+          <div class="row">
+              <div class="col-lg-12">
+                  Copyright &copy; Matthias Brooks
+              </div>
+          </div>
+      </div>
+    </footer>
+
+    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+    <div class="scroll-top page-scroll visible-xs visible-sm">
+        <a class="btn btn-primary" href="#page-top">
+            <i class="fa fa-chevron-up"></i>
+        </a>
+    </div>
+
+    <!-- jQuery -->
+    <script src="/assets/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/assets/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="/assets/js/classie.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/assets/js/freelancer.js"></script>
+    <script src="/assets/js/bootstrap-switch.js"></script>
+    <script src="/assets/js/sweetalert.min.js"></script>
+
+    <script>
+      $(document).ready(function() {
+
+       var docHeight = $(window).height();
+       var footerHeight = $('#footer').height();
+       var footerTop = $('#footer').position().top + footerHeight;
+
+       if (footerTop < docHeight) {
+        $('#footer').css('margin-top', 10+ (docHeight - footerTop) + 'px');
+       }
+      });
+     </script>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+export GOPATH=`pwd`
+DEPS=(
+  github.com/aymerick/raymond
+  github.com/fatih/structs
+  github.com/gin-gonic/gin
+  github.com/tehjojo/go-newznab
+  github.com/jteeuwen/go-bindata/...
+  github.com/Sirupsen/logrus
+  github.com/matthiassb/go-tvmaze/tvmaze
+)
+for i in ${DEPS[@]}; do
+  echo "Getting dependency: " $i
+  go get $i
+done
+
+#Build go-bindata
+go build -o bin/go-bindata $GOPATH/src/github.com/jteeuwen/go-bindata/go-bindata/*.go
+
+echo "Done"

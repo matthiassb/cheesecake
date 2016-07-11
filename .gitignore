@@ -1,0 +1,6 @@
+.vagrant
+src/*
+src/github.com/*
+src/github.com/matthiassb
+
+!/src/github.com/matthiassb/cheesecake/*

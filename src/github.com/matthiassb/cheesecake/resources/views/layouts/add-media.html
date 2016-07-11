@@ -1,0 +1,172 @@
+{{> header }}
+    <!-- Portfolio Grid Section -->
+    <section class="flex-1">
+      <div class="container">
+          <div class="row" style="margin-top:20px;">
+              <div class="col-lg-12 text-center">
+                  <h2>Add Media</h2>
+                  <hr class="star-primary">
+              </div>
+          </div>
+          <div class="row">
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-7">
+                <input type="text" autocomplete="off" class="form-control" id="mediaSearch" placeholder="Search" >
+              </div>
+              <div class="col-lg-1">
+                <input type="checkbox" name="isTv" data-size="large" checked>
+              </div>
+            </div>
+          </div>
+          <br/>
+          <div class="row" id="results">
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+    <div class="scroll-top page-scroll visible-xs visible-sm">
+        <a class="btn btn-primary" href="#page-top">
+            <i class="fa fa-chevron-up"></i>
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer" class="text-center navbar-no-margin">
+      <div class="container">
+          <div class="row">
+              <div class="col-lg-12">
+                  Copyright &copy; Matthias Brooks
+              </div>
+          </div>
+      </div>
+    </footer>
+
+    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+    <div class="scroll-top page-scroll visible-xs visible-sm">
+        <a class="btn btn-primary" href="#page-top">
+            <i class="fa fa-chevron-up"></i>
+        </a>
+    </div>
+
+    <!-- jQuery -->
+    <script src="/assets/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/assets/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="/assets/js/classie.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/assets/js/freelancer.js"></script>
+    <script src="/assets/js/bootstrap-switch.js"></script>
+    <script src="/assets/js/sweetalert.min.js"></script>
+
+
+
+
+    <script>
+
+      $("[name='isTv']").bootstrapSwitch({
+        "onText": "TV",
+        "offText": "Movies"
+      });
+      $(document).on('click', '.addSeries', function(){
+        $("#fakeLoader").fadeIn();
+        var id = $(this).data("series");
+        $.post("/api/media/tv/" + id, function(res){
+          $("#fakeLoader").fadeOut();
+          swal("Media Successfully Added", "Redirecting...", "success");
+          setTimeout(function(){
+            window.location = "/media/tv";
+          }, 2000);
+        });
+      });
+      String.prototype.trimToLength = function(m) {
+        return (this.length > m)
+          ? jQuery.trim(this).substring(0, m).split(" ").slice(0, -1).join(" ") + "..."
+          : this;
+      };
+      var typingTimer;                //timer identifier
+      var doneTypingInterval = 1000;  //time in ms, 5 second for example
+      var $input = $('#mediaSearch');
+
+      $('#mediaSearch').keypress(function (e) {
+        if (e.which == 13) {
+          doneTyping();
+          return false;
+        }
+      });
+
+
+      function clearUp(){
+        $("#results > div").not(":first").remove();
+        $("#results div:first").find("h3").text("No Results");
+        $("#results div:first").find("img").attr("src", "");
+        $("#results div:first").find(".overview").text("");
+        $("#results > div").hide()
+      }
+      //user is "finished typing," do something
+
+      function doneTyping () {
+       clearUp();
+       $("#fakeLoader").fadeIn();
+       var url = "/api/media/search?term=" + $('#mediaSearch').val();
+       if($("[name='isTv']").is(":checked")){
+
+       }
+
+       $.get(url, function(response){
+
+         if(response.status == 200){
+
+           for(var i = 0; i < response.data.length; i++){
+             var poster = response.data[i]["Show"]["Image"]["Original"].length > 0 ? response.data[i]["Show"]["Image"]["Original"] : "/assets/img/default-poster.png";
+             var name = response.data[i]["Show"].Name;
+
+             var rex = /(<([^>]+)>)/ig;
+             response.data[i]["Show"]["Summary"] = response.data[i]["Show"]["Summary"].replace(rex , "").trimToLength(75)
+             var overview = response.data[i]["Show"]["Summary"] ? response.data[i]["Show"]["Summary"] : "";
+
+             var template = "<div class='col-sm-6 col-md-4'>" +
+             "  <div class='thumbnail' style='height: 770px'>" +
+             "    <img src='" + poster + "' alt='' style='height: 495px'>" +
+             "    <div class='caption'>" +
+             "      <div style='height: 65px'>" +
+             "        <h3>" + name + "</h3>" +
+             "      </div>" +
+             "      <div style='height: 40px'>" +
+             "        <span class='overview'>" + overview + "</span>" +
+             "      </div>" +
+             "      <div>" +
+             "        <p>&nbsp;</p>" +
+             "        <p><a href='#/' data-series='" + response.data[i]["Show"].ID + "' class='btn btn-primary addSeries' role='button'>Add</a></p>" +
+             "      </div>" +
+             "    </div>" +
+             "  </div>" +
+             "</div>";
+
+           $("#results").append(template);
+         }
+       } else {
+         clearUp();
+       }
+
+        $("#fakeLoader").fadeOut();
+      }).fail(function(xhr, text, error) {
+        if(xhr.status == 404){
+          clearUp();
+          $("#fakeLoader").fadeOut();
+          swal("No Media Found", "", "error");
+        }
+      })
+    }
+
+    </script>
+</body>
+
+</html>
