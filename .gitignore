@@ -2,6 +2,7 @@
 /src/*
 /src/github.com/*
 /src/github.com/matthiassb/*
+/src/github.com/matthiassb/cheescake/web.go
 
 !/src/github.com/matthiassb/cheesecake
 !/src/github.com/matthiassb/cheesecake/*
