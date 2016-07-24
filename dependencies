@@ -1,12 +1,13 @@
 export GOPATH=`pwd`
 DEPS=(
   github.com/aymerick/raymond
-  github.com/fatih/structs
   github.com/gin-gonic/gin
   github.com/tehjojo/go-newznab
   github.com/jteeuwen/go-bindata/...
   github.com/Sirupsen/logrus
   github.com/matthiassb/go-tvmaze/tvmaze
+  github.com/matthiassb/go-usenet
+  github.com/matthiassb/go-unarr
 )
 for i in ${DEPS[@]}; do
   echo "Getting dependency: " $i

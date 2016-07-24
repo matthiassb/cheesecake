@@ -1,6 +1,7 @@
 .vagrant
-src/*
-src/github.com/*
-src/github.com/matthiassb
+/src/*
+/src/github.com/*
+/src/github.com/matthiassb/*
 
+!/src/github.com/matthiassb/cheesecake
 !/src/github.com/matthiassb/cheesecake/*

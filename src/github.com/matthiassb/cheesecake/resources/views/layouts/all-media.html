@@ -11,7 +11,7 @@
                 </div>
             </div>
             <div class="row">
-              {{#unless this.Shows }}
+              {{#unless this }}
               <div class="col-xs-12 col-lg-4 portfolio-item">
                   <a class="portfolio-link">
                       <div class="caption">
@@ -26,7 +26,7 @@
               </div>
               {{/unless}}
 
-              {{#each this.Shows }}
+              {{#each this }}
 
               <div class="col-xs-12 col-lg-4 portfolio-item">
                   <a class="portfolio-link"  data-key="{{ ShowInfo.ID }}">

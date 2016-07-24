@@ -1,3 +1,17 @@
 {
-  "DataDirectory" : "/tmp/data"
+  "DataDirectory" : "/tmp/data",
+  "NewzNab": [
+    {
+      "Url": "https://api.oznzb.com/api",
+      "Key": "XXXXXXXXXXXXXXX",
+      "Ssl": true
+    }
+  ],
+  "Usenet": {
+    "Address": "ssl.server.com",
+    "Port": 563,
+    "Username": "XXXXXX",
+    "Password": "XXXXX",
+    "TLS": true
+  }
 }

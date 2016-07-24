@@ -5,11 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/aymerick/raymond"
-	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
-	//"github.com/nemith/tvmaze"
-	//"github.com/tehjojo/go-newznab/newznab"
+	"github.com/tehjojo/go-newznab/newznab"
 	"github.com/matthiassb/go-tvmaze/tvmaze"
+	"github.com/matthiassb/go-usenet"
+	"github.com/matthiassb/go-usenet/nzb"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -67,16 +67,25 @@ type Configuration struct {
 				Key string
 				Ssl bool
     }
+	Usenet struct {
+		Address string
+		Port int
+		Username string
+		Password string
+		TLS bool
+	}
 }
 
 type ShowFull struct {
 	ShowInfo	*tvmaze.Show
 	Episodes	[]tvmaze.Episode
 }
-
-type AllShows struct {
-	Shows []ShowFull
+type NzbDownload struct {
+	Completed int
+	Total int
 }
+var currentDownloads = map[string]NzbDownload{}
+var AllShows = map[int]ShowFull{}
 
 func main() {
 
@@ -110,12 +119,11 @@ func main() {
 		return
 	}
 
-	AllShows := AllShows{}
 	for _, file := range files {
 		b, _ := ioutil.ReadFile(configuration.DataDirectory + "/" + file.Name() + "/" + file.Name() + ".json")
 		sf := ShowFull{}
 		json.Unmarshal(b, &sf)
-		AllShows.Shows = append(AllShows.Shows, sf)
+		AllShows[sf.ShowInfo.ID] = sf
 	}
 
 	data, err := Asset("resources/views/partials/header.html")
@@ -127,12 +135,6 @@ func main() {
 		raymond.RegisterPartial("footer", string(data))
 	}
 	r := gin.Default()
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
 
 	//router for all resource files
 	r.GET("/assets/*file", func(c *gin.Context) {
@@ -164,9 +166,7 @@ func main() {
 		if err != nil {
 			c.String(404, "404: Not Found")
 		} else {
-			ctx := structs.Map(AllShows)
-
-			result, _ := raymond.Render(string(data), ctx)
+			result, _ := raymond.Render(string(data), AllShows)
 			c.Data(200, "text/html", []byte(result))
 		}
 	})
@@ -211,15 +211,14 @@ func main() {
 	})
 	r.GET("/api/media/tv/:id", func(c *gin.Context) {
 		id, _ := strconv.Atoi(c.Param("id"))
-		sf:= ShowFull{}
+		var sf ShowFull
 		seasons := make(map[string]int)
 
-		for i := 0; i < len(AllShows.Shows); i++ {
-			if AllShows.Shows[i].ShowInfo.ID == id {
-				sf = AllShows.Shows[i]
-				for j := 0; j < len(AllShows.Shows[i].Episodes); j++ {
-					season := strconv.Itoa(AllShows.Shows[i].Episodes[j].Season)
-					fmt.Println(seasons)
+		for _, v := range AllShows {
+			if v.ShowInfo.ID == id {
+				sf = v
+				for j := 0; j < len(v.Episodes); j++ {
+					season := strconv.Itoa(v.Episodes[j].Season)
 					seasons[season] = 1
 				}
 				sf.ShowInfo.SeasonCount = len(seasons)
@@ -239,13 +238,12 @@ func main() {
 		if err != nil {
 			c.String(404, "404: Not Found")
 		} else {
-			for i := 0; i < len(AllShows.Shows); i++ {
-				if len(AllShows.Shows[i].Episodes) != 0 {
-					if AllShows.Shows[i].ShowInfo.ID == id {
-						seriesIndex = i
-						for j := 0; j < len(AllShows.Shows[i].Episodes); j++ {
+			for _, v := range AllShows {
+				if len(v.Episodes) != 0 {
+					if v.ShowInfo.ID == id {
+						for j := 0; j < len(v.Episodes); j++ {
 
-							episodeId := AllShows.Shows[i].Episodes[j].ID
+							episodeId := v.Episodes[j].ID
 							if episodeId == episode {
 								episodeIndex = j
 							}
@@ -256,14 +254,32 @@ func main() {
 			fmt.Println(seriesIndex)
 			fmt.Println(episodeIndex)
 			ctx := map[string]interface{}{
-				"ShowInfo": AllShows.Shows[seriesIndex].ShowInfo,
-				"Episode":  AllShows.Shows[seriesIndex].Episodes[episodeIndex],
+				"ShowInfo": AllShows[id].ShowInfo,
+				"Episode":  AllShows[id].Episodes[episodeIndex],
 			}
 			result, err := raymond.Render(string(data), ctx)
 			fmt.Println(err)
 			c.Data(200, "text/html", []byte(result))
 		}
 	})
+	r.GET("/media/tv/:id/:episode/stream", func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		episode, _ := strconv.Atoi(c.Param("episode"))
+
+		var episodeStruct tvmaze.Episode
+		for _, v := range AllShows {
+			if len(v.Episodes) != 0 {
+				if v.ShowInfo.ID == id {
+					for j := 0; j < len(v.Episodes); j++ {
+						if v.Episodes[j].ID == episode {
+							episodeStruct = v.Episodes[j]
+						}
+					}
+				}
+			}
+		}
+		c.File(episodeStruct.Path)
+	});
 	r.GET("/data/:id/*file", func(c *gin.Context) {
 		path := configuration.DataDirectory + "/" + c.Param("id") + "/" + c.Param("file")
 		fmt.Println(path)
@@ -288,17 +304,17 @@ func main() {
 		id, _ := strconv.Atoi(c.Param("id"))
 		season, _ := strconv.Atoi(c.Param("season"))
 
-		index := 0
 		episodeMap := make(map[string]tvmaze.Episode)
-		for i := 0; i < len(AllShows.Shows); i++ {
-			if len(AllShows.Shows[i].Episodes) != 0 {
-				if AllShows.Shows[i].ShowInfo.ID == id {
-					index = i
-					for j := 0; j < len(AllShows.Shows[i].Episodes); j++ {
 
-						epSeason := AllShows.Shows[i].Episodes[j].Season
+		for _, v := range AllShows {
+			if len(v.Episodes) != 0 {
+				if v.ShowInfo.ID == id {
+
+					for j := 0; j < len(v.Episodes); j++ {
+
+						epSeason := v.Episodes[j].Season
 						if season == epSeason {
-							episodeMap[strconv.Itoa(AllShows.Shows[i].Episodes[j].Number)] = AllShows.Shows[i].Episodes[j]
+							episodeMap[strconv.Itoa(v.Episodes[j].Number)] = v.Episodes[j]
 						}
 					}
 				}
@@ -307,13 +323,103 @@ func main() {
 
 		c.JSON(200, gin.H{
 			"status":     200,
-			"ShowInfo": AllShows.Shows[index].ShowInfo,
+			"ShowInfo": AllShows[id].ShowInfo,
 			"Episodes":   episodeMap,
 		})
 	})
+	r.GET("/api/download/search", func(c *gin.Context) {
+		show := c.Query("show")
+		episode := c.Query("episode")
+
+		if show == "" || episode == "" {
+			c.JSON(404, gin.H{
+				"status":  404,
+				"message": "No Series Found",
+			})
+		} else {
+			showI, _ := strconv.Atoi(show)
+			episodeI, _ := strconv.Atoi(episode)
+			client := newznab.New(configuration.NewzNab[0].Url, configuration.NewzNab[0].Key, configuration.NewzNab[0].Ssl)
+
+			var episode tvmaze.Episode
+			for _, v := range AllShows[showI].Episodes {
+				if v.ID == episodeI {
+					episode = v
+				}
+			}
+			searchString := fmt.Sprintf("%s S%02dE%02d", AllShows[showI].ShowInfo.Name, episode.Season, episode.Number)
+			//get categories from configuration
+			categories := []int{
+				newznab.CategoryTVSD,
+			}
+			results, _ := client.SearchWithQuery(categories, searchString, "tv")
+			c.JSON(200, results)
+		}
+	})
 	r.POST("/api/download", func(c *gin.Context) {
-		//client := newznab.New(configuration.NewzNab[0].Url, configuration.NewzNab[0].Key, configuration.NewzNab[0].Ssl)
-		//results, _ := client.SearchWithQuery(newznab.CategoryTVHD, 35048, 3, 1)
+		type Payload struct {
+	    Show		int `form:"show" json:"show"`
+	    Episode	int `form:"episode" json:"episode"`
+			Url string `form:"url" json:"url"`
+			Filename string `form:"filename" json:"filename"`
+		}
+		var body Payload
+		err := c.BindJSON(&body)
+		fmt.Println(err)
+    if err == nil {
+			fmt.Println("good")
+
+
+			nzbPath := configuration.DataDirectory+"/"+strconv.Itoa(body.Show)+"/"+strconv.Itoa(body.Episode)+"/"+body.Filename
+			downloadDir := configuration.DataDirectory+"/"+strconv.Itoa(body.Show)+"/"+strconv.Itoa(body.Episode)+"/download"
+
+			out, _ := os.Create(nzbPath)
+
+			resp, _ := http.Get(body.Url)
+			io.Copy(out, resp.Body)
+
+
+			usenet.Config.Address = configuration.Usenet.Address
+			usenet.Config.Port = configuration.Usenet.Port
+			usenet.Config.Username = configuration.Usenet.Username
+			usenet.Config.Password = configuration.Usenet.Password
+			usenet.Config.TLS = configuration.Usenet.TLS
+
+			file, err := os.Open(nzbPath)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+			nzbFile, _ := nzb.Parse(file)
+			go func() {
+				_, path := usenet.DownloadNzb(nzbFile, downloadDir)
+				for i, v := range AllShows[body.Show].Episodes {
+					if v.ID == body.Episode {
+						AllShows[body.Show].Episodes[i].Path = path
+
+						s, err := json.Marshal(AllShows[body.Show])
+						if err != nil {
+							c.JSON(500, gin.H{
+								"status":  500,
+								"message": "Internal Server Error: " + err.Error(),
+							})
+							return
+						}
+						showString := strconv.Itoa(body.Show)
+						ioutil.WriteFile(configuration.DataDirectory+"/"+showString+"/"+showString+".json", s, 0644)
+
+					}
+				}
+			}()
+
+			c.JSON(202, gin.H{
+				"status":  202,
+				"message": "Download Started",
+			})
+
+    } else {
+			fmt.Println("bad")
+		}
 	})
 	r.POST("/api/media/tv/:id", func(c *gin.Context) {
 		id := c.Param("id")
@@ -366,7 +472,7 @@ func main() {
 			return
 		}
 		ioutil.WriteFile(configuration.DataDirectory+"/"+convID+"/"+convID+".json", s, 0644)
-		AllShows.Shows = append(AllShows.Shows, fullShow)
+		AllShows[fullShow.ShowInfo.ID] = fullShow
 		c.JSON(200, gin.H{
 			"status":  200,
 			"message": "Series Added",

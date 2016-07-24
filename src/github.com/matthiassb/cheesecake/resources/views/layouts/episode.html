@@ -1,155 +1,255 @@
 {{> header }}
 
-    <!-- Portfolio Grid Section -->
-    <section class="flex-1">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-offset-1 col-lg-5">
-            <img src="{{ this.Episode.Image.Original }}" style="width: 100%">
-          </div>
-          <div class="col-lg-5 text-center">
-            <br/>
-            <br/>
-            <h2 style="font-size:30px">{{this.ShowInfo.Name}}</h2>
-            <h3>{{this.Episode.Name}}</h3>
-            <h4>Season {{this.Episode.Season}} Episode {{this.Episode.Number}}</h4>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-offset-1 col-lg-10" style="text-align:justify">
-            <br/>
-            <h4 class="summary">{{this.Episode.Summary}}</h4>
-          </div>
-        </div>
+<!-- Portfolio Grid Section -->
+<section class="flex-1">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-offset-1 col-lg-5">
+        <img src="{{ this.Episode.Image.Original }}" style="width: 100%">
+      </div>
+      <div class="col-lg-5 text-center">
         <br/>
-        <div class="row">
-          <div class="col-xs-4 col-lg-offset-3 col-lg-2 " style="text-align: center;">
-            <a data-show="{{ this.SeriesInfo.ID }}" data-episode="{{this.Episode.ID}}"
-            {{#if this.Episode.IsDownloaded }}
-              class="play"
-            {{else}}
-              class="download"
-            {{/if}}>
+        <br/>
+        <h2 style="font-size:30px">{{this.ShowInfo.Name}}</h2>
+        <h3>{{this.Episode.Name}}</h3>
+        <h4>Season {{this.Episode.Season}} Episode {{this.Episode.Number}}</h4>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-offset-1 col-lg-10" style="text-align:justify">
+        <br/>
+        <h4 class="summary">{{this.Episode.Summary}}</h4>
+      </div>
+    </div>
+    <br/>
+    <div class="row">
+      <div class="col-xs-4 col-lg-offset-3 col-lg-2 " style="text-align: center;">
+        <a data-show="{{ this.ShowInfo.ID }}" data-episode="{{this.Episode.ID}}" {{#if this.Episode.IsDownloaded }} class="play" {{else}} class="download" {{/if}}>
               {{#if this.Episode.IsDownloaded }}
                 <img src="/assets/img/play.png" class="img-responsive"  style="display:inline">
               {{else}}
                 <img src="/assets/img/download.png" class="img-responsive" style="display:inline">
               {{/if}}
             </a>
-          </div>
-          <div class="col-xs-4 col-lg-2 " style="text-align: center;">
-            <a data-show="{{ this.SeriesInfo.Id }}" data-episode="{{this.Episode.ID}}">
-                <img src="/assets/img/uncheck.png" class="img-responsive" style="display:inline">
-            </a>
-
-          </div>
-          <div class="col-xs-4 col-lg-2 " style="text-align: center;">
-            <a data-show="{{ this.SeriesInfo.Id }}" data-episode="{{this.Episode.ID}}">
-              <img src="/assets/img/computer.png" class="img-responsive" alt="" style="display:inline">
-            </a>
-          </div>
-        </div>
       </div>
-    </section>
-
-    <div class="portfolio-modal modal fade" id="mediaModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-content">
-            <div class="close-modal" data-dismiss="modal">
-                <div class="lr">
-                    <div class="rl">
-                    </div>
-                </div>
-            </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12 ">
-                        <div class="modal-body">
-                            <div class="row">
-                              <video width="800"  id="video" controls>
-                                <source src="" id="videoSource">
-                              </video>
-                            </div>
-                            <button type="button" class="btn btn-default" data-dismiss="modal">
-                              <i class="fa fa-times"></i> Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Footer -->
-    <footer id="footer" class="text-center ">
-      <div class="container">
-          <div class="row">
-              <div class="col-lg-12">
-                  Copyright &copy; Matthias Brooks
-              </div>
-          </div>
-      </div>
-    </footer>
-
-    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
-    <div class="scroll-top page-scroll visible-xs visible-sm">
-        <a class="btn btn-primary" href="#page-top">
-            <i class="fa fa-chevron-up"></i>
+      <div class="col-xs-4 col-lg-2 " style="text-align: center;">
+        <a data-show="{{ this.ShowInfo.ID }}" data-episode="{{this.Episode.ID}}">
+          <img src="/assets/img/uncheck.png" class="img-responsive" style="display:inline">
         </a>
+
+      </div>
+      <div class="col-xs-4 col-lg-2 " style="text-align: center;">
+        <a data-show="{{ this.ShowInfo.ID }}" data-episode="{{this.Episode.ID}}">
+          <img src="/assets/img/computer.png" class="img-responsive" alt="" style="display:inline">
+        </a>
+      </div>
     </div>
+  </div>
+</section>
 
-    <!-- jQuery -->
-    <script src="/assets/js/jquery.js"></script>
+<div class="portfolio-modal modal fade" id="mediaModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-content">
+    <div class="close-modal" data-dismiss="modal">
+      <div class="lr">
+        <div class="rl">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 ">
+          <div class="modal-body">
+            <div class="row">
+              <video width="800" id="video" controls>
+                <source src="" id="videoSource">
+              </video>
+            </div>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              <i class="fa fa-times"></i> Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="/assets/js/bootstrap.min.js"></script>
 
-    <!-- Plugin JavaScript -->
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
-    <script src="/assets/js/classie.js"></script>
+<!-- Footer -->
+<footer id="footer" class="text-center ">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        Copyright &copy; Matthias Brooks
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
+<div class="scroll-top page-scroll visible-xs visible-sm">
+  <a class="btn btn-primary" href="#page-top">
+    <i class="fa fa-chevron-up"></i>
+  </a>
+</div>
+
+<!-- jQuery -->
+<script src="/assets/js/jquery.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/assets/js/bootstrap.min.js"></script>
+
+<!-- Plugin JavaScript -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+<script src="/assets/js/classie.js"></script>
 
 
-    <!-- Custom Theme JavaScript -->
-    <script src="/assets/js/freelancer.js"></script>
-    <script src="/assets/js/bootstrap-switch.js"></script>
-    <script src="/assets/js/sweetalert.min.js"></script>
+<!-- Custom Theme JavaScript -->
+<script src="/assets/js/freelancer.js"></script>
+<script src="/assets/js/bootstrap-switch.js"></script>
+<script src="/assets/js/sweetalert.min.js"></script>
 
-
+<div id="resultsModal" style="display: hidden" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Search Results</h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class='table table-striped table-hover' style='text-align: left;'>
+            <thead>
+              <th>Age</th>
+              <th>Title</th>
+              <th>Size</th>
+              <th><i class='fa fa-download' aria-hidden='true'></i></th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-  $(document).ready(function(){
+  function humanFileSize(bytes, si) {
+    var thresh = si ? 1000 : 1024;
+    if (Math.abs(bytes) < thresh) {
+      return bytes + ' B';
+    }
+    var units = si ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+    var u = -1;
+    do {
+      bytes /= thresh;
+      ++u;
+    } while (Math.abs(bytes) >= thresh && u < units.length - 1);
+    return bytes.toFixed(1) + ' ' + units[u];
+  }
+
+  function relative_time(date_str) {
+    if (!date_str) {
+      return;
+    }
+    date_str = $.trim(date_str);
+    date_str = date_str.replace(/\.\d\d\d+/, ""); // remove the milliseconds
+    date_str = date_str.replace(/-/, "/").replace(/-/, "/"); //substitute - with /
+    date_str = date_str.replace(/T/, " ").replace(/Z/, " UTC"); //remove T and substitute Z with UTC
+    date_str = date_str.replace(/([\+\-]\d\d)\:?(\d\d)/, " $1$2"); // +08:00 -> +0800
+    var parsed_date = new Date(date_str);
+    var relative_to = (arguments.length > 1) ? arguments[1] : new Date(); //defines relative to what ..default is now
+    var delta = parseInt((relative_to.getTime() - parsed_date) / 1000);
+    delta = (delta < 2) ? 2 : delta;
+    var r = '';
+    if (delta < 60) {
+      r = delta + ' seconds ago';
+    } else if (delta < 120) {
+      r = 'a minute ago';
+    } else if (delta < (45 * 60)) {
+      r = (parseInt(delta / 60, 10)).toString() + ' minutes ago';
+    } else if (delta < (2 * 60 * 60)) {
+      r = 'an hour ago';
+    } else if (delta < (24 * 60 * 60)) {
+      r = '' + (parseInt(delta / 3600, 10)).toString() + ' hours ago';
+    } else if (delta < (48 * 60 * 60)) {
+      r = 'a day ago';
+    } else {
+      r = (parseInt(delta / 86400, 10)).toString() + ' days ago';
+    }
+    return r;
+  };
+  $(document).ready(function() {
     var rex = /(<([^>]+)>)/ig;
     $(".summary").text($(".summary").text().replace(rex, ""));
-    $(".download").click(function(e){
+    $(".download").click(function(e) {
+      $("#fakeLoader").fadeIn();
       e.preventDefault();
       var show = $(this).data('show');
       var episode = $(this).data('episode');
-      console.log(show, episode)
-      $.post("/api/download",
-        {
+      $("#resultsModal tbody").children().remove();
+
+      $.get("/api/download/search", {
           "show": show,
           "episode": episode
         },
-        function(data){
-          if(data.statusCode == 201){
-
+        function(data) {
+          $("#fakeLoader").fadeOut();
+          for (var i = 0; i < data.length; i++) {
+            var row = "<tr><td>" + relative_time(data[i].pub_date) +
+              "</td><td>" + data[i].title +
+              "</td><td>" + humanFileSize(data[i].size) +
+              "</td><td><a class='download-episode' href='#/' data-filename='" + data[i].title + ".nzb' data-url='" + data[i].download_url + "' data-show='" + show + "' data-episode='" + episode + "'>" +
+              "<i class='fa fa-download download-episode' aria-hidden='true'></a></i>";
+            $("#resultsModal tbody").append(row);
           }
+          $("#resultsModal").modal('show');
         }
       );
     });
-    $(".play").click(function(e){
+    $('body').on('click', 'a.download-episode', function() {
+      $.ajax({
+        url: "/api/download",
+        type: "POST",
+        dataType: "json", // expected format for response
+        contentType: "application/json", // send as JSON
+        data: JSON.stringify({
+          "show": $(this).data('show'),
+          "episode": $(this).data('episode'),
+          "filename": $(this).data('filename'),
+          "url": $(this).data('url')
+        }),
+
+        complete: function() {
+          //called when complete
+        },
+
+        success: function(response) {
+          alert(response)
+        },
+
+        error: function() {
+          //called when there is an error
+        },
+      });
+    });
+    $(".play").click(function(e) {
       e.preventDefault();
       var show = $(this).data('show');
       var episode = $(this).data('episode');
       $("#videoSource").attr("src", "/media/tv/" + show + "/" + episode + "/stream");
       $("#video").load()
-      //setup socket.io stuff here
+        //setup socket.io stuff here
       $('#mediaModal').modal('toggle');
 
     });
 
   });
-
 </script>
 </body>
 
