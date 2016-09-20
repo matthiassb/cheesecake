@@ -7,7 +7,7 @@ DEPS=(
   github.com/Sirupsen/logrus
   github.com/matthiassb/go-tvmaze/tvmaze
   github.com/matthiassb/go-usenet
-  github.com/matthiassb/go-unarr
+  github.com/mholt/archiver
 )
 for i in ${DEPS[@]}; do
   echo "Getting dependency: " $i

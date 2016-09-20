@@ -8,7 +8,8 @@ A fully featured media server written in Go.
 1. Extract ZIP from [releases](https://github.com/matthiassb/cheesecake/releases)
 
 #### Contributing
-Feel free to fork and send P
+1. Install dependencies
+Feel free to fork and send PR
 
 #### Accessing the UI
 Navigate to http://localhost:9090

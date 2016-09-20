@@ -8,5 +8,6 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--nictype1", "Am79C973"]
     vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
     vb.memory = "4096"
+    v.cpus = "2"
   end
 end
